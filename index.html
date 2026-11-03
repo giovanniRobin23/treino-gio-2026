@@ -45,7 +45,8 @@ function render(){
  document.querySelector("#sessionNote").textContent=p.note;
  const sets=w===1?"2 séries":w===2?"3 séries nos 3 primeiros; 2 nos demais":"3 séries";
  document.querySelector("#exercises").innerHTML=p.items.length?p.items.map((it,i)=>'<div class="exercise '+(s[i]?'done':'')+'"><label><input type="checkbox" data-ex="'+i+'" '+(s[i]?'checked':'')+'><div><div class="name">'+it[0]+'</div><div class="details">'+it[1]+' · '+sets+'</div><a href="'+it[2]+'" target="_blank" rel="noopener">Ver demonstração ↗</a></div></label><div class="exercise-actions"><button class="primary" data-start-ex="'+i+'">▶ Iniciar 45 s</button></div></div>').join(""):'<p class="muted">Dia de descanso. Sessão sem exercícios obrigatórios.</p>';
- document.querySelectorAll("[data-ex]").forEach(c=>c.onchange=()=>{let x=saved(w,selectedDay);x[c.dataset.ex]=c.checked;save(w,selectedDay,x);render()});\n document.querySelectorAll("[data-start-ex]").forEach(b=>b.onclick=()=>startExercise(p.items[+b.dataset.startEx][0]));
+ document.querySelectorAll("[data-ex]").forEach(c=>c.onchange=()=>{let x=saved(w,selectedDay);x[c.dataset.ex]=c.checked;save(w,selectedDay,x);render()});
+ document.querySelectorAll("[data-start-ex]").forEach(b=>b.onclick=()=>startExercise(p.items[+b.dataset.startEx][0]));
  document.querySelector("#finish").textContent=s.finished?"Sessão concluída ✓":"Marcar sessão concluída";
  const sessions=[0,1,2,4,5],done=sessions.filter(d=>saved(w,d).finished).length;
  document.querySelector("#count").textContent=done+" de 5 sessões de treino concluídas nesta semana";
