@@ -48,6 +48,23 @@
 #shareStatus{min-height:1.3em}
 @media(max-width:500px){.session-panel{padding:14px}.planner-panel{padding:11px 12px}.session-heading{gap:8px}.elapsed-chip{min-width:72px}}
 
+
+/* Player compacto inspirado nos controles de mídia do Android */
+.timer-dock{background:#171717;color:#fff;border:1px solid #484848;border-radius:20px;padding:12px 14px;box-shadow:0 10px 38px #000b}
+.timer-dock .topline{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:11px}
+.timer-dock .media-art{display:grid;place-items:center;width:42px;height:42px;border-radius:11px;background:#e31837;color:white;font-size:1.2rem;font-weight:900}
+.timer-dock .media-info{min-width:0}
+.timer-dock #dockTitle{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.95rem}
+.timer-dock #dockSubtitle{font-size:.75rem;color:#c2c2c2}
+.timer-dock .timer{font-size:1.45rem;color:#fff}
+.timer-dock .media-track{height:4px;background:#454545;border-radius:99px;overflow:hidden;margin:11px 0 9px}
+.timer-dock .media-track span{display:block;height:100%;width:0;background:#e31837}
+.timer-dock .controls{justify-content:space-between;align-items:center;gap:6px;margin-top:0}
+.timer-dock .controls button{font-size:.8rem;padding:7px 10px;border-radius:999px}
+.timer-dock .controls button.primary{background:#e31837;border-color:#e31837}
+.timer-dock .media-duration{font-size:.7rem;color:#c2c2c2;min-width:35px;text-align:right}
+@media(max-width:500px){.timer-dock{left:8px;right:8px;bottom:8px}.timer-dock .controls button{padding:7px 8px}.timer-dock .topline{grid-template-columns:38px minmax(0,1fr) auto}.timer-dock .media-art{width:38px;height:38px}}
+
 </style>
 </head>
 <body><main>
@@ -77,7 +94,11 @@
 <section class="panel"><div class="eyebrow">Entre as séries</div><h2>Timer de descanso</h2><p class="muted">Use entre as séries ou exercícios. O contador fica visível mesmo enquanto você navega nesta página.</p><div class="controls"><button id="enableNotifications">Ativar avisos no dispositivo</button><span id="notificationStatus" class="helper">Avisos desativados</span></div><div class="timer" id="clock">01:00</div><div class="controls"><button data-seconds="30">30 s</button><button data-seconds="60" class="active">60 s</button><button data-seconds="90">90 s</button><button id="timerToggle" class="primary">Iniciar</button><button id="timerReset">Zerar</button></div></section>
 <section class="panel"><h2>Regras simples</h2><ul class="muted"><li>Semana 1: 2 séries por exercício, leve e controlado (deixe 3–4 repetições “na reserva”).</li><li>Semana 2: 3 séries nos três primeiros exercícios; 2 nos demais.</li><li>Semanas 3–4: 3 séries; aumente repetições ou carga apenas mantendo a técnica.</li><li>Spinning contínuo: esforço 4–5/10, em ritmo que permita conversar.</li><li>Intervalado: 5 min leve, 4–6 ciclos de 1 min forte + 2 min leve, 5 min leve.</li><li>Interrompa se sentir dor aguda, tontura ou mal-estar. Descanso também faz parte do treino.</li></ul></section>
 <footer class="muted" style="text-align:center;padding:16px 16px 100px">Seu progresso fica salvo neste dispositivo. Para avisos fora do app, permita notificações e mantenha o navegador/PWA autorizado.</footer>
-</main><aside id="exerciseDock" class="timer-dock" aria-live="polite"><div class="topline"><div><strong id="dockTitle">Exercício em andamento</strong><div class="muted" id="dockSubtitle">Contador do exercício</div></div><div class="timer" id="exerciseClock">00:45</div></div><div class="controls"><button data-work-seconds="30">30 s</button><button data-work-seconds="45" class="active">45 s</button><button data-work-seconds="60">60 s</button><button id="pauseExercise" class="primary">Pausar</button><button id="stopExercise">Encerrar</button></div></aside>
+</main><aside id="exerciseDock" class="timer-dock" aria-live="polite">
+<div class="topline"><div class="media-art">G</div><div class="media-info"><strong id="dockTitle">Exercício em andamento</strong><div class="muted" id="dockSubtitle">Treino Gio · contador</div></div><div class="timer" id="exerciseClock">00:45</div></div>
+<div class="media-track"><span id="exerciseTrack"></span></div>
+<div class="controls"><button data-work-seconds="30">30 s</button><button data-work-seconds="45" class="active">45 s</button><button data-work-seconds="60">60 s</button><button id="pauseExercise" class="primary">Ⅱ Pausar</button><span class="media-duration" id="exerciseDuration">00:45</span><button id="stopExercise">✕</button></div>
+</aside>
 <script>
 const plan=[
 {day:"SEG",title:"Força A — corpo inteiro",type:"FORÇA A",note:"Faça os movimentos com controle. Descanse 60–90 s entre séries.",items:[["Agachamento com halter","10–15 repetições","https://www.youtube.com/results?search_query=agachamento+com+halter+t%C3%A9cnica"],["Flexão inclinada","8–12 repetições","https://www.youtube.com/results?search_query=flex%C3%A3o+inclinada+execu%C3%A7%C3%A3o"],["Remada curvada com halteres","10–15 repetições","https://www.youtube.com/results?search_query=remada+curvada+halteres+t%C3%A9cnica"],["Levantamento terra romeno","10–12 repetições","https://www.youtube.com/results?search_query=levantamento+terra+romeno+halteres"],["Dead bug","8–10 por lado","https://www.youtube.com/results?search_query=dead+bug+exerc%C3%ADcio+core"]]},
@@ -135,31 +156,85 @@ function renderSessionElapsed(){
  const elapsed=state.durationSeconds!=null?state.durationSeconds:(state.startedAt?Math.max(0,Math.floor((Date.now()-state.startedAt)/1000)):0);
  document.querySelector("#sessionElapsed").textContent=formatTime(elapsed);
 }
-function shareSessionResult(){
+function buildSummaryCanvas(){
  const w=+document.querySelector("#week").value,p=plan[selectedDay],state=saved(w,selectedDay);
  const completed=p.items.filter((item,i)=>!!state[i]);
  const seconds=state.durationSeconds!=null?state.durationSeconds:0;
  const date=new Date(state.completedAt||Date.now()).toLocaleDateString("pt-BR");
  const duration=seconds<60?seconds+" s":Math.floor(seconds/60)+" min"+(seconds%60?" "+(seconds%60)+" s":"");
- const exerciseLines=completed.length?completed.map(item=>"• "+item[0]).join("\n"):"• Dia de recuperação";
- const summary="🏁 Treino concluído!\n"+p.title+" · Semana "+w+"\n📅 "+date+"\n⏱️ Tempo total: "+duration+"\n✅ "+completed.length+" de "+p.items.length+" exercícios marcados\n\n"+exerciseLines+"\n\nTreino Gio";
- const status=document.querySelector("#shareStatus");
- if(navigator.share){navigator.share({title:"Meu treino — "+p.title,text:summary}).then(()=>{status.textContent="Resumo compartilhado!"}).catch(error=>{if(error&&error.name!=="AbortError")status.textContent="Não foi possível abrir o compartilhamento."});return}
- if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(summary).then(()=>{status.textContent="Resumo copiado! Agora é só colar onde quiser."}).catch(()=>{status.textContent="Copie seu resumo:\n"+summary})}
- else{status.textContent="Copie seu resumo:\n"+summary}
+ const canvas=document.createElement("canvas");canvas.width=1080;canvas.height=1350;
+ const ctx=canvas.getContext("2d");
+ const bg=ctx.createLinearGradient(0,0,1080,1350);bg.addColorStop(0,"#262626");bg.addColorStop(.58,"#101010");bg.addColorStop(1,"#080808");
+ ctx.fillStyle=bg;ctx.fillRect(0,0,1080,1350);
+ ctx.fillStyle="#e31837";ctx.fillRect(0,0,1080,18);ctx.fillRect(76,95,12,105);
+ ctx.fillStyle="#f7f7f7";ctx.font="800 30px system-ui, sans-serif";ctx.fillText("TREINO GIO",112,125);
+ ctx.fillStyle="#bdbdbd";ctx.font="600 24px system-ui, sans-serif";ctx.fillText("RESUMO DA SESSÃO · SEMANA "+w,76,245);
+ ctx.fillStyle="#ffffff";ctx.font="800 62px system-ui, sans-serif";
+ const titleLines=wrapCanvasText(ctx,p.title,900);
+ titleLines.slice(0,2).forEach((line,i)=>ctx.fillText(line,76,335+i*76));
+ const boxY=505;
+ roundedRect(ctx,76,boxY,928,220,28,"#1d1d1d","#3d3d3d");
+ ctx.fillStyle="#e31837";ctx.font="800 22px system-ui, sans-serif";ctx.fillText("TEMPO TOTAL",112,boxY+58);
+ ctx.fillStyle="#ffffff";ctx.font="800 68px system-ui, sans-serif";ctx.fillText(duration,112,boxY+132);
+ ctx.fillStyle="#bdbdbd";ctx.font="500 23px system-ui, sans-serif";ctx.fillText(date,112,boxY+178);
+ ctx.fillStyle="#ffffff";ctx.font="800 28px system-ui, sans-serif";ctx.fillText("PROGRESSO DO DIA",76,800);
+ ctx.fillStyle="#e31837";ctx.font="800 48px system-ui, sans-serif";ctx.fillText(p.items.length?Math.round(completed.length/p.items.length*100)+"%":"100%",76,866);
+ ctx.fillStyle="#bdbdbd";ctx.font="500 24px system-ui, sans-serif";ctx.fillText(p.items.length?completed.length+" de "+p.items.length+" exercícios concluídos":"Dia de recuperação",240,862);
+ roundedRect(ctx,76,900,928,12,6,"#393939");
+ ctx.fillStyle="#e31837";if(p.items.length)roundedRect(ctx,76,900,928*completed.length/p.items.length,12,6,"#e31837");else roundedRect(ctx,76,900,928,12,6,"#e31837");
+ ctx.fillStyle="#ffffff";ctx.font="800 25px system-ui, sans-serif";ctx.fillText("FEITO HOJE",76,976);
+ ctx.font="500 24px system-ui, sans-serif";ctx.fillStyle="#dedede";
+ const lines=completed.length?completed.map(item=>item[0]):(p.items.length?[]:["Recuperação também é treino."]);
+ let y=1025;lines.slice(0,5).forEach((line,i)=>{ctx.fillStyle="#e31837";ctx.fillText("✓",80,y);ctx.fillStyle="#dedede";ctx.fillText(clipCanvasText(ctx,line,850),122,y);y+=43});
+ ctx.fillStyle="#777777";ctx.font="600 19px system-ui, sans-serif";ctx.fillText("CONSTÂNCIA > PERFEIÇÃO",76,1270);
+ ctx.fillStyle="#e31837";ctx.fillRect(76,1300,928,4);
+ return canvas;
 }
-
-function updateWorkClock(){document.querySelector("#exerciseClock").textContent=formatTime(workRemaining)}
+function wrapCanvasText(ctx,text,maxWidth){const words=text.split(" "),lines=[];let line="";for(const word of words){const test=line?line+" "+word:word;if(ctx.measureText(test).width>maxWidth&&line){lines.push(line);line=word}else line=test}if(line)lines.push(line);return lines}
+function clipCanvasText(ctx,text,maxWidth){if(ctx.measureText(text).width<=maxWidth)return text;let s=text;while(s.length&&ctx.measureText(s+"…").width>maxWidth)s=s.slice(0,-1);return s+"…"}
+function roundedRect(ctx,x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke()}}
+async function shareSessionResult(){
+ const w=+document.querySelector("#week").value,p=plan[selectedDay],state=saved(w,selectedDay),canvas=buildSummaryCanvas();
+ const status=document.querySelector("#shareStatus");
+ const filename="treino-gio-semana-"+w+"-"+p.day.toLowerCase()+".png";
+ const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));
+ if(!blob){status.textContent="Não foi possível gerar a imagem do resumo.";return}
+ const file=new File([blob],filename,{type:"image/png"});
+ if(navigator.canShare&&navigator.canShare({files:[file]})&&navigator.share){
+  try{await navigator.share({title:"Meu treino — "+p.title,text:"Treino Gio · "+p.title,fileName:filename,files:[file]});status.textContent="Imagem do resumo compartilhada!"}
+  catch(error){if(error&&error.name!=="AbortError")status.textContent="O compartilhamento não abriu. Você pode salvar a imagem pelo navegador."}
+  return;
+ }
+ const url=URL.createObjectURL(blob),link=document.createElement("a");link.href=url;link.download=filename;link.click();setTimeout(()=>URL.revokeObjectURL(url),1500);
+ status.textContent="A imagem do resumo foi gerada. Se não baixou automaticamente, tente novamente pelo botão.";
+}
+function updateWorkClock(){
+ document.querySelector("#exerciseClock").textContent=formatTime(workRemaining);
+ document.querySelector("#exerciseTrack").style.width=(Math.max(0,Math.min(100,(1-workRemaining/workSeconds)*100)))+"%";
+ document.querySelector("#exerciseDuration").textContent=formatTime(workSeconds);
+ if("mediaSession" in navigator){
+  try{navigator.mediaSession.setPositionState({duration:workSeconds,playbackRate:1,position:Math.min(workSeconds,Math.max(0,workSeconds-workRemaining))})}catch(e){}
+ }
+}
+function updateMediaSession(playing){
+ if(!("mediaSession" in navigator))return;
+ try{
+  navigator.mediaSession.metadata=new MediaMetadata({title:document.querySelector("#dockTitle").textContent,artist:"Treino Gio",album:"Contador de exercício"});
+  navigator.mediaSession.playbackState=playing?"playing":"paused";
+  navigator.mediaSession.setActionHandler("play",()=>{workPaused=false;document.querySelector("#pauseExercise").textContent="Ⅱ Pausar";updateMediaSession(true)});
+  navigator.mediaSession.setActionHandler("pause",()=>{workPaused=true;document.querySelector("#pauseExercise").textContent="▶ Continuar";updateMediaSession(false)});
+  navigator.mediaSession.setActionHandler("stop",()=>{clearInterval(workTimer);workTimer=null;document.querySelector("#exerciseDock").classList.remove("show");navigator.mediaSession.playbackState="none"});
+ }catch(e){}
+}
 function startExercise(name){
  const w=+document.querySelector("#week").value,state=saved(w,selectedDay);if(!state.startedAt&&!state.finished){state.startedAt=Date.now();save(w,selectedDay,state);render()}
  clearInterval(workTimer);workRemaining=workSeconds;workPaused=false;
  document.querySelector("#dockTitle").textContent=name;
- document.querySelector("#dockSubtitle").textContent="Contador ativo · "+workSeconds+" segundos";
+ document.querySelector("#dockSubtitle").textContent="Treino Gio · contador ativo";
  document.querySelector("#exerciseDock").classList.add("show");
- document.querySelector("#pauseExercise").textContent="Pausar";
- document.querySelectorAll("[data-work-seconds]").forEach(b=>b.classList.toggle("active",+b.dataset.workSeconds===workSeconds));
- updateWorkClock();
- workTimer=setInterval(()=>{if(workPaused)return;workRemaining=Math.max(0,workRemaining-1);updateWorkClock();if(workRemaining===0){clearInterval(workTimer);workTimer=null;document.querySelector("#dockSubtitle").textContent="Tempo concluído! Faça uma pausa se precisar.";document.querySelector("#pauseExercise").textContent="Reiniciar";if("vibrate" in navigator)navigator.vibrate([180,80,180]);sendNotification("Tempo concluído",name+" — contador de "+workSeconds+" s finalizado.");}},1000);
+ document.querySelector("#pauseExercise").textContent="Ⅱ Pausar";
+ updateMediaSession(true);updateWorkClock();
+ workTimer=setInterval(()=>{if(workPaused)return;workRemaining=Math.max(0,workRemaining-1);updateWorkClock();if(workRemaining===0){clearInterval(workTimer);workTimer=null;document.querySelector("#dockSubtitle").textContent="Tempo concluído · hora de descansar";document.querySelector("#pauseExercise").textContent="↻ Reiniciar";updateMediaSession(false);if("vibrate" in navigator)navigator.vibrate([180,80,180]);sendNotification("Tempo concluído",name+" — contador de "+workSeconds+" s finalizado.");}},1000);
 }
 function sendNotification(title,body){
  if(!("Notification" in window)||Notification.permission!=="granted")return;
@@ -170,8 +245,8 @@ document.querySelector("#enableNotifications").onclick=async()=>{
  if(!("Notification" in window)){document.querySelector("#notificationStatus").textContent="Este navegador não oferece notificações.";return}
  try{const permission=await Notification.requestPermission();document.querySelector("#notificationStatus").textContent=permission==="granted"?"Avisos ativados ✓":permission==="denied"?"Permissão bloqueada nas configurações do navegador.":"Permissão não concedida";if(permission==="granted")sendNotification("Avisos ativados","Você receberá um aviso quando um contador terminar.");}catch(e){document.querySelector("#notificationStatus").textContent="Não foi possível ativar avisos."}
 };
-document.querySelectorAll("[data-work-seconds]").forEach(b=>b.onclick=()=>{workSeconds=+b.dataset.workSeconds;workRemaining=workSeconds;updateWorkClock();document.querySelectorAll("[data-work-seconds]").forEach(x=>x.classList.toggle("active",x===b));document.querySelector("#dockSubtitle").textContent="Contador ativo · "+workSeconds+" segundos";if(workTimer){clearInterval(workTimer);workTimer=null;startExercise(document.querySelector("#dockTitle").textContent)}});
-document.querySelector("#pauseExercise").onclick=()=>{if(workRemaining===0){startExercise(document.querySelector("#dockTitle").textContent);return}workPaused=!workPaused;document.querySelector("#pauseExercise").textContent=workPaused?"Continuar":"Pausar";};
+document.querySelectorAll("[data-work-seconds]").forEach(b=>b.onclick=()=>{workSeconds=+b.dataset.workSeconds;workRemaining=workSeconds;updateWorkClock();document.querySelectorAll("[data-work-seconds]").forEach(x=>x.classList.toggle("active",x===b));if(workTimer){clearInterval(workTimer);workTimer=null;startExercise(document.querySelector("#dockTitle").textContent)}else document.querySelector("#dockSubtitle").textContent="Treino Gio · contador de "+workSeconds+" s"});
+document.querySelector("#pauseExercise").onclick=()=>{if(workRemaining===0){startExercise(document.querySelector("#dockTitle").textContent);return}workPaused=!workPaused;document.querySelector("#pauseExercise").textContent=workPaused?"▶ Continuar":"Ⅱ Pausar";updateMediaSession(!workPaused)};
 document.querySelector("#stopExercise").onclick=()=>{clearInterval(workTimer);workTimer=null;document.querySelector("#exerciseDock").classList.remove("show")};
 if("Notification" in window)document.querySelector("#notificationStatus").textContent=Notification.permission==="granted"?"Avisos ativados ✓":"Avisos desativados";
 if("serviceWorker" in navigator && location.protocol!=="file:")window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
