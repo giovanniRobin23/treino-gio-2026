@@ -1,10 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#080808"/>
-  <path d="M256 52 426 118v133c0 100-67 165-170 209C153 416 86 351 86 251V118z" fill="#f7f7f7" stroke="#e31837" stroke-width="14" stroke-linejoin="round"/>
-  <path d="M112 145h288v58H112z" fill="#e31837"/>
-  <path d="M112 203h288v58H112z" fill="#fff"/>
-  <path d="M112 261h288v58H112z" fill="#111"/>
-  <path d="M112 319h288v26c-28 40-68 67-144 101-76-34-116-61-144-101z" fill="#e31837"/>
-  <path d="M175 170h162v18H175zM175 228h162v18H175zM175 286h162v18H175z" fill="#fff" opacity=".9"/>
-  <circle cx="256" cy="385" r="23" fill="#fff"/>
+<rect width="512" height="512" rx="96" fill="#080808"/>
+<path d="M74 188 256 54l182 134" fill="none" stroke="#f7f7f7" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M122 231h268v30H122z" fill="#e31837"/>
+<circle cx="256" cy="157" r="22" fill="#f7f7f7"/>
+<path d="M256 181v76m0-51-62 25m62-25 62 25m-62 26-48 59m48-59 48 59" stroke="#f7f7f7" stroke-width="17" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+<path d="M171 112h170" stroke="#f7f7f7" stroke-width="11" stroke-linecap="round"/>
+<path d="M182 89v45m-17-36v27m-17-20v13m182-29v45m17-36v27m17-20v13" stroke="#e31837" stroke-width="11" stroke-linecap="round"/>
+<circle cx="146" cy="342" r="45" fill="none" stroke="#f7f7f7" stroke-width="12"/><circle cx="366" cy="342" r="45" fill="none" stroke="#f7f7f7" stroke-width="12"/>
+<path d="m146 342 72-58 62 58h86l-62-58-86 0" fill="none" stroke="#e31837" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M256 274h28m-9-21 18 21" stroke="#f7f7f7" stroke-width="10" stroke-linecap="round"/>
+<path d="M74 407h364" stroke="#e31837" stroke-width="14" stroke-linecap="round"/>
+<text x="256" y="464" text-anchor="middle" fill="#f7f7f7" font-family="Arial,sans-serif" font-size="34" font-weight="900">TREINO EM CASA</text>
 </svg>
