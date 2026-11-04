@@ -1,7 +1,7 @@
 {
-  "name": "Treino Gio — Plano de 4 Semanas",
-  "short_name": "Treino Gio",
-  "description": "Plano de treino em casa com pesos e spinning.",
+  "name": "Treino em Casa — Plano de 4 Semanas",
+  "short_name": "Treino em Casa",
+  "description": "Treino em casa com pesos e spinning.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
