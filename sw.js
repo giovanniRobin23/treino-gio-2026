@@ -1,4 +1,4 @@
-const CACHE = "treino-gio-2026-v6";
+const CACHE = "treino-em-casa-v1";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
