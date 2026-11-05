@@ -1,8 +1,10 @@
-# Treino Gio — PWA de 4 semanas
+# Treino em Casa — PWA de 4 semanas
 
-Aplicativo instalável para acompanhar o plano de treino em casa com pesos e spinning.
+Aplicativo instalável para acompanhar quatro semanas de treino em casa, combinando exercícios de força, bicicleta e spinning.
 
 ## Recursos
+- Identidade visual Treino em Casa, com interface otimizada para celular.
+- Tipografia Bebas Neue nos títulos e Inter nos textos.
 - Calendário semanal com seleção de semana e dia.
 - Exercícios, séries/repetições e links de busca de demonstrações no YouTube.
 - Checklists de exercícios e sessões concluídas.
@@ -18,6 +20,9 @@ Aplicativo instalável para acompanhar o plano de treino em casa com pesos e spi
 
 ## Instalar no Android
 Abra a URL publicada no Chrome e use o menu do navegador para **Instalar app** ou **Adicionar à tela inicial**.
+
+## Atualizações
+Este README registra a versão atual do projeto e pode ser atualizado para disparar uma nova publicação pelo GitHub Pages quando necessário.
 
 ## Observações
 - Os links do YouTube abrem pesquisas de demonstrações, não vídeos específicos.
