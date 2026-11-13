@@ -196,7 +196,7 @@ const plan=[
 {day:"SÁB",title:"Spinning intervalado",type:"CARDIO",note:"5 min aquecendo + 4–6 ciclos (1 min forte / 2 min leve) + 5 min desaquecendo.",items:[["Spinning intervalado","22–28 min aprox.","https://www.youtube.com/results?search_query=spinning+intervalado+iniciante"]]},
 {day:"DOM",title:"Descanso",type:"DESCANSO",note:"Recupere-se e prepare a próxima semana.",items:[]}
 ];
-let selectedDay=0,seconds=60,remaining=60,timer=null,workSeconds=45,workRemaining=45,workTimer=null,workPaused=false;
+let selectedDay=0,seconds=60,remaining=60,timer=null,restNoticeTicker=null,workSeconds=45,workRemaining=45,workTimer=null,workPaused=false;
 const key=(w,d)=>"treino-gio-2026-"+w+"-"+d;
 function saved(w,d){try{return JSON.parse(localStorage.getItem(key(w,d))||"{}")}catch{return {}}}
 function save(w,d,obj){localStorage.setItem(key(w,d),JSON.stringify(obj))}
@@ -255,8 +255,23 @@ document.querySelector("#finish").onclick=()=>{const w=+document.querySelector("
 document.querySelector("#reset").onclick=()=>{const w=+document.querySelector("#week").value;save(w,selectedDay,{});render()};
 function showClock(){document.querySelector("#clock").textContent=String(Math.floor(remaining/60)).padStart(2,"0")+":"+String(remaining%60).padStart(2,"0")}
 document.querySelectorAll("[data-seconds]").forEach(b=>b.onclick=()=>{clearInterval(timer);timer=null;seconds=remaining=+b.dataset.seconds;document.querySelector("#timerToggle").textContent="Iniciar";document.querySelectorAll("[data-seconds]").forEach(x=>x.classList.toggle("active",x===b));showClock()});
-document.querySelector("#timerToggle").onclick=()=>{if(timer){clearInterval(timer);timer=null;document.querySelector("#timerToggle").textContent="Continuar";return}document.querySelector("#timerToggle").textContent="Pausar";timer=setInterval(()=>{remaining--;showClock();if(remaining<=0){clearInterval(timer);timer=null;document.querySelector("#timerToggle").textContent="Iniciar";if("vibrate" in navigator)navigator.vibrate(200);remaining=seconds;showClock()}},1000)};
-document.querySelector("#timerReset").onclick=()=>{clearInterval(timer);timer=null;remaining=seconds;showClock();document.querySelector("#timerToggle").textContent="Iniciar"};
+document.querySelector("#timerToggle").onclick=()=>{
+ if(timer){clearInterval(timer);timer=null;clearInterval(restNoticeTicker);restNoticeTicker=null;cancelTimerNotification();document.querySelector("#timerToggle").textContent="Continuar";return}
+ document.querySelector("#timerToggle").textContent="Pausar";
+ if(Notification.permission==="granted"){showTimerNotification("Descanso em andamento",remaining);restNoticeTicker=setInterval(()=>{if(timer&&remaining>0)showTimerNotification("Descanso em andamento",remaining)},15000)}
+ timer=setInterval(()=>{
+  remaining--;showClock();
+  if(remaining<=0){
+   clearInterval(timer);timer=null;clearInterval(restNoticeTicker);restNoticeTicker=null;
+   document.querySelector("#timerToggle").textContent="Iniciar";
+   if("vibrate" in navigator)navigator.vibrate([180,100,180]);
+   sendNotification("Descanso concluído","Seu intervalo terminou. Quando estiver pronto, continue no seu ritmo.");
+   cancelTimerNotification();
+   remaining=seconds;showClock();
+  }
+ },1000)
+};
+document.querySelector("#timerReset").onclick=()=>{clearInterval(timer);timer=null;clearInterval(restNoticeTicker);restNoticeTicker=null;cancelTimerNotification();remaining=seconds;showClock();document.querySelector("#timerToggle").textContent="Iniciar"};
 function formatTime(n){return String(Math.floor(n/60)).padStart(2,"0")+":"+String(n%60).padStart(2,"0")}
 
 function renderSessionElapsed(){
@@ -340,22 +355,37 @@ function startExercise(name){
  const w=+document.querySelector("#week").value,state=saved(w,selectedDay);if(!state.startedAt&&!state.finished){state.startedAt=Date.now();save(w,selectedDay,state);render()}
  clearInterval(workTimer);workRemaining=workSeconds;workPaused=false;
  document.querySelector("#dockTitle").textContent=name;
- document.querySelector("#dockSubtitle").textContent="Treino em Casa · contador ativo";
+ document.querySelector("#dockSubtitle").textContent="FitCasa · contador ativo";
  document.querySelector("#exerciseDock").classList.add("show");
  document.querySelector("#pauseExercise").textContent="Ⅱ Pausar";
  updateMediaSession(true);updateWorkClock();
  workTimer=setInterval(()=>{if(workPaused)return;workRemaining=Math.max(0,workRemaining-1);updateWorkClock();if(workRemaining===0){clearInterval(workTimer);workTimer=null;document.querySelector("#dockSubtitle").textContent="Tempo concluído · hora de descansar";document.querySelector("#pauseExercise").textContent="↻ Reiniciar";updateMediaSession(false);if("vibrate" in navigator)navigator.vibrate([180,80,180]);sendNotification("Tempo concluído",name+" — contador de "+workSeconds+" s finalizado.");}},1000);
 }
-function sendNotification(title,body){
+async function showSystemNotification(title,body,options={}){
  if(!("Notification" in window)||Notification.permission!=="granted")return;
- if("serviceWorker" in navigator)navigator.serviceWorker.ready.then(reg=>reg.showNotification(title,{body,icon:"./fitcasa-icon.svg",badge:"./fitcasa-icon.svg",tag:"treino-gio-timer"})).catch(()=>new Notification(title,{body}));
- else try{new Notification(title,{body})}catch(e){}
+ const config={body,icon:"./fitcasa-icon.svg",badge:"./fitcasa-icon.svg",tag:"fitcasa-rest-timer",renotify:false,silent:true,...options};
+ try{
+  if("serviceWorker" in navigator){
+   const reg=await navigator.serviceWorker.ready;
+   await reg.showNotification(title,config);
+  }else new Notification(title,config);
+ }catch(error){try{new Notification(title,config)}catch(e){}}
+}
+function showTimerNotification(title,value){
+ const mm=String(Math.floor(value/60)).padStart(2,"0"),ss=String(value%60).padStart(2,"0");
+ showSystemNotification(title,mm+":"+ss+" restantes",{tag:"fitcasa-rest-timer",silent:true});
+}
+function cancelTimerNotification(){
+ if("serviceWorker" in navigator)navigator.serviceWorker.ready.then(reg=>reg.getNotifications({tag:"fitcasa-rest-timer"})).then(list=>list.forEach(n=>n.close())).catch(()=>{});
+}
+function sendNotification(title,body){
+ showSystemNotification(title,body,{tag:"fitcasa-timer-finished",renotify:true,silent:false});
 }
 document.querySelector("#enableNotifications").onclick=async()=>{
  if(!("Notification" in window)){document.querySelector("#notificationStatus").textContent="Este navegador não oferece notificações.";return}
- try{const permission=await Notification.requestPermission();document.querySelector("#notificationStatus").textContent=permission==="granted"?"Avisos ativados ✓":permission==="denied"?"Permissão bloqueada nas configurações do navegador.":"Permissão não concedida";if(permission==="granted")sendNotification("Avisos ativados","Você receberá um aviso quando um contador terminar.");}catch(e){document.querySelector("#notificationStatus").textContent="Não foi possível ativar avisos."}
+ try{const permission=await Notification.requestPermission();document.querySelector("#notificationStatus").textContent=permission==="granted"?"Avisos ativados ✓":permission==="denied"?"Permissão bloqueada nas configurações do navegador.":"Permissão não concedida";if(permission==="granted")sendNotification("Avisos ativados","Você receberá uma notificação quando o descanso terminar, mesmo com a tela bloqueada enquanto o app continuar ativo.");}catch(e){document.querySelector("#notificationStatus").textContent="Não foi possível ativar avisos."}
 };
-document.querySelectorAll("[data-work-seconds]").forEach(b=>b.onclick=()=>{workSeconds=+b.dataset.workSeconds;workRemaining=workSeconds;updateWorkClock();document.querySelectorAll("[data-work-seconds]").forEach(x=>x.classList.toggle("active",x===b));if(workTimer){clearInterval(workTimer);workTimer=null;startExercise(document.querySelector("#dockTitle").textContent)}else document.querySelector("#dockSubtitle").textContent= "Treino em Casa · contador de "+workSeconds+" s"});
+document.querySelectorAll("[data-work-seconds]").forEach(b=>b.onclick=()=>{workSeconds=+b.dataset.workSeconds;workRemaining=workSeconds;updateWorkClock();document.querySelectorAll("[data-work-seconds]").forEach(x=>x.classList.toggle("active",x===b));if(workTimer){clearInterval(workTimer);workTimer=null;startExercise(document.querySelector("#dockTitle").textContent)}else document.querySelector("#dockSubtitle").textContent= "FitCasa · contador de "+workSeconds+" s"});
 document.querySelector("#pauseExercise").onclick=()=>{if(workRemaining===0){startExercise(document.querySelector("#dockTitle").textContent);return}workPaused=!workPaused;document.querySelector("#pauseExercise").textContent=workPaused?"▶ Continuar":"Ⅱ Pausar";updateMediaSession(!workPaused)};
 document.querySelector("#stopExercise").onclick=()=>{clearInterval(workTimer);workTimer=null;document.querySelector("#exerciseDock").classList.remove("show")};
 if("Notification" in window)document.querySelector("#notificationStatus").textContent=Notification.permission==="granted"?"Avisos ativados ✓":"Avisos desativados";
