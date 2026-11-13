@@ -1,4 +1,4 @@
-const CACHE = "fitcasa-v7";
+const CACHE = "fitcasa-v8";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./fitcasa-icon.svg", "./fitcasa-logo.svg"];
 
 self.addEventListener("install", event => {
