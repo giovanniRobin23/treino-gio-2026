@@ -9,7 +9,7 @@
   "theme_color": "#08a6a3",
   "icons": [
     {
-      "src": "./icon.svg",
+      "src": "./fitcasa-icon.svg?v=4",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
