@@ -114,7 +114,7 @@ button:active{transform:scale(.97)}
 </style>
 </head>
 <body><main>
-<header class="brand-header"><img class="brand-logo" src="./fitcasa-logo.svg" alt="FitCasa — Treino em Casa"><div class="eyebrow">SEU TREINO · SEU RITMO</div><h1>Treino em casa.</h1></header>
+<header class="brand-header"><img class="brand-logo" src="./fitcasa-logo.svg?v=5" alt="FitCasa — Treino em Casa"><div class="eyebrow">SEU TREINO · SEU RITMO</div><h1>Treino em casa.</h1></header>
 <section class="panel planner-panel" id="plannerPanel">
   <div class="topline">
     <div><div class="eyebrow">PLANO DE TREINO</div><div class="muted" id="currentSelection">Semana 1 · SEG · Força A</div></div>
@@ -297,7 +297,11 @@ document.querySelectorAll("[data-work-seconds]").forEach(b=>b.onclick=()=>{workS
 document.querySelector("#pauseExercise").onclick=()=>{if(workRemaining===0){startExercise(document.querySelector("#dockTitle").textContent);return}workPaused=!workPaused;document.querySelector("#pauseExercise").textContent=workPaused?"▶ Continuar":"Ⅱ Pausar";updateMediaSession(!workPaused)};
 document.querySelector("#stopExercise").onclick=()=>{clearInterval(workTimer);workTimer=null;document.querySelector("#exerciseDock").classList.remove("show")};
 if("Notification" in window)document.querySelector("#notificationStatus").textContent=Notification.permission==="granted"?"Avisos ativados ✓":"Avisos desativados";
-if("serviceWorker" in navigator && location.protocol!=="file:")window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+if("serviceWorker" in navigator && location.protocol!=="file:"){
+ let refreshing=false;
+ navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!refreshing){refreshing=true;window.location.reload()}});
+ window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").then(reg=>reg.update()).catch(()=>{}));
+}
 render();showClock();setInterval(renderSessionElapsed,1000);
 
 /* Animação progressiva e parallax leve, desligados para quem prefere menos movimento */
