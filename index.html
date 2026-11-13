@@ -111,6 +111,46 @@ button:active{transform:scale(.97)}
 .exercise:focus-within,.exercise:hover{transform:translateY(-2px);box-shadow:0 8px 20px #26374612}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}.panel.reveal-ready{opacity:1;transform:none}.brand-header{transform:none}}
 
+
+/* Ajustes finos de alinhamento e espaçamento mobile */
+.planner-panel .topline{align-items:center}
+.planner-panel .topline:first-child>div{min-width:0;flex:1}
+.planner-panel #togglePlanner{flex:0 0 auto;min-height:42px;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center}
+.planner-week{display:grid;grid-template-columns:minmax(72px,.55fr) minmax(0,1.45fr);align-items:center;gap:12px;margin-top:14px}
+.planner-week label{min-width:0}
+.planner-week select{width:100%;min-width:0;min-height:46px;text-align:left;white-space:normal}
+#exercises{display:grid;gap:11px;margin:12px 0 4px}
+#exercises .exercise{margin:0;min-width:0}
+#exercises .exercise:last-child{margin-bottom:4px}
+.session-actions{align-items:center}
+#openShareTheme{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:42px;white-space:nowrap}
+.choice-dialog{width:min( calc(100% - 32px), 420px);border:1px solid #dce5e3;border-radius:22px;padding:0;background:#fff;color:#263746;box-shadow:0 24px 80px #102b2b44}
+.choice-dialog::backdrop{background:#14252dcc;backdrop-filter:blur(4px)}
+.choice-dialog form{padding:20px}
+.dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.dialog-head h2{font-family:var(--font-display);font-size:1.8rem;line-height:1;margin:5px 0}
+.dialog-close{width:38px;height:38px;padding:0;border-radius:50%;font-size:1rem}
+.choice-dialog p{margin:8px 0 16px}
+.theme-options{display:grid;gap:10px}
+.theme-option{display:grid;grid-template-columns:44px 1fr 22px;align-items:center;gap:12px;text-align:left;width:100%;padding:12px;border-radius:14px;background:#f4f7f6;border:1px solid #dce5e3;color:#263746}
+.theme-option.active{border:2px solid #08a6a3;padding:11px}
+.theme-option small{display:block;color:#62717a;font-size:.78rem;margin-top:2px}
+.theme-check{opacity:0;color:#08a6a3;font-weight:900}
+.theme-option.active .theme-check{opacity:1}
+.theme-swatch{width:42px;height:42px;border-radius:10px;border:1px solid #dce5e3}
+.light-swatch{background:linear-gradient(135deg,#fff 50%,#e8f1ef 50%)}
+.dark-swatch{background:linear-gradient(135deg,#263746 50%,#08a6a3 50%)}
+.dialog-done{width:100%;margin-top:16px;min-height:44px}
+@media(max-width:500px){
+ .planner-week{grid-template-columns:64px minmax(0,1fr);gap:8px}
+ .planner-week select{font-size:.9rem;padding:10px 11px}
+ .planner-panel #togglePlanner{font-size:.78rem;padding:8px 10px}
+ .session-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+ .session-actions>*{min-width:0;width:100%;margin:0}
+ .session-actions #finish{grid-column:1/-1}
+ .session-actions #shareResult{grid-column:1/-1}
+}
+
 </style>
 </head>
 <body><main>
@@ -121,7 +161,7 @@ button:active{transform:scale(.97)}
     <button id="togglePlanner" type="button" aria-expanded="true">Recolher seleção</button>
   </div>
   <div id="plannerChoices">
-    <div class="topline" style="margin-top:12px"><label for="week"><strong>Semana</strong></label><select id="week" aria-label="Semana"><option value="1">Semana 1 · adaptação</option><option value="2">Semana 2 · volume</option><option value="3">Semana 3 · progressão</option><option value="4">Semana 4 · progressão</option></select></div>
+    <div class="planner-week"><label for="week"><strong>Semana</strong></label><select id="week" aria-label="Semana"><option value="1">Semana 1 · adaptação</option><option value="2">Semana 2 · volume</option><option value="3">Semana 3 · progressão</option><option value="4">Semana 4 · progressão</option></select></div>
     <div id="days" class="days"></div>
   </div>
 </section>
@@ -132,7 +172,8 @@ button:active{transform:scale(.97)}
   <div class="day-progress"><div class="topline"><strong>Progresso do dia</strong><span id="dayProgressText" class="muted">0 de 5 exercícios</span></div><div class="progress"><span id="dayBar"></span></div></div>
   <button id="startSession" class="primary start-session" type="button">▶ Iniciar cronômetro do treino</button>
   <div id="exercises"></div>
-  <div class="controls session-actions"><button class="primary" id="finish">Concluir treino do dia</button><label class="helper" for="shareTheme">Imagem:</label><select id="shareTheme" aria-label="Tema da imagem compartilhada"><option value="light" selected>Claro</option><option value="dark">Escuro</option></select><button id="shareResult" hidden>Compartilhar resultado ↗</button><button id="reset">Reiniciar dia</button></div>
+  <div class="controls session-actions"><button class="primary" id="finish">Concluir treino do dia</button><button id="openShareTheme" type="button" aria-haspopup="dialog">Imagem: <span id="shareThemeLabel">Claro</span> ▾</button><select id="shareTheme" aria-label="Tema da imagem compartilhada" hidden><option value="light" selected>Claro</option><option value="dark">Escuro</option></select><button id="shareResult" hidden>Compartilhar resultado ↗</button><button id="reset">Reiniciar dia</button></div>
+<dialog id="shareThemeDialog" class="choice-dialog" aria-labelledby="shareThemeTitle"><form method="dialog"><div class="dialog-head"><div><div class="eyebrow">PERSONALIZAR</div><h2 id="shareThemeTitle">Imagem compartilhada</h2></div><button class="dialog-close" value="cancel" aria-label="Fechar">✕</button></div><p class="muted">Escolha o fundo do seu resumo.</p><div class="theme-options"><button type="button" class="theme-option active" data-share-theme="light"><span class="theme-swatch light-swatch"></span><span><strong>Claro</strong><small>Fundo branco</small></span><span class="theme-check">✓</span></button><button type="button" class="theme-option" data-share-theme="dark"><span class="theme-swatch dark-swatch"></span><span><strong>Escuro</strong><small>Azul-petróleo</small></span><span class="theme-check">✓</span></button></div><button class="primary dialog-done" value="cancel">Concluído</button></form></dialog>
   <p id="shareStatus" class="helper" aria-live="polite">Marque os exercícios conforme concluir cada um. O tempo começa no primeiro exercício ou ao iniciar o cronômetro.</p>
   <p class="helper">Toque em “Iniciar 45 s” para usar o contador de cada exercício. Você pode ativar avisos no dispositivo.</p>
 </section>
@@ -188,6 +229,27 @@ function render(){
 document.querySelector("#week").onchange=()=>{selectedDay=0;render();document.querySelector("#plannerPanel").classList.add("compact");document.querySelector("#togglePlanner").textContent="Alterar";document.querySelector("#togglePlanner").setAttribute("aria-expanded","false")};
 document.querySelector("#togglePlanner").onclick=()=>{const panel=document.querySelector("#plannerPanel"),compact=panel.classList.toggle("compact");document.querySelector("#togglePlanner").textContent=compact?"Alterar":"Recolher seleção";document.querySelector("#togglePlanner").setAttribute("aria-expanded",String(!compact))};
 document.querySelector("#startSession").onclick=()=>{const w=+document.querySelector("#week").value,state=saved(w,selectedDay);if(!state.startedAt){state.startedAt=Date.now();save(w,selectedDay,state);render()}};
+
+const shareThemeDialog=document.querySelector("#shareThemeDialog");
+const shareThemeSelect=document.querySelector("#shareTheme");
+function setShareTheme(theme){
+ shareThemeSelect.value=theme;
+ document.querySelector("#shareThemeLabel").textContent=theme==="dark"?"Escuro":"Claro";
+ document.querySelectorAll("[data-share-theme]").forEach(button=>{
+  const active=button.dataset.shareTheme===theme;
+  button.classList.toggle("active",active);
+  button.setAttribute("aria-pressed",String(active));
+ });
+}
+document.querySelector("#openShareTheme").onclick=()=>shareThemeDialog.showModal();
+document.querySelectorAll("[data-share-theme]").forEach(button=>button.onclick=()=>{
+ setShareTheme(button.dataset.shareTheme);
+});
+shareThemeDialog.addEventListener("click",event=>{
+ if(event.target===shareThemeDialog)shareThemeDialog.close();
+});
+setShareTheme("light");
+
 document.querySelector("#shareResult").onclick=shareSessionResult;
 document.querySelector("#finish").onclick=()=>{const w=+document.querySelector("#week").value,state=saved(w,selectedDay),now=Date.now();if(!state.startedAt)state.startedAt=now;state.finished=true;state.completedAt=now;state.durationSeconds=Math.max(0,Math.round((now-state.startedAt)/1000));save(w,selectedDay,state);render()};
 document.querySelector("#reset").onclick=()=>{const w=+document.querySelector("#week").value;save(w,selectedDay,{});render()};
