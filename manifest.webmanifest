@@ -1,13 +1,18 @@
 {
-  "name": "Treino em Casa — Plano de 4 Semanas",
-  "short_name": "Treino em Casa",
-  "description": "Treino em casa com pesos e spinning.",
+  "name": "FitCasa — Treino em Casa",
+  "short_name": "FitCasa",
+  "description": "Seu plano de treino em casa, com a identidade FitCasa.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f4f7f6",
   "theme_color": "#08a6a3",
   "icons": [
-    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
   ]
 }
