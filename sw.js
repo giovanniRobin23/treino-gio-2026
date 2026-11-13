@@ -1,4 +1,4 @@
-const CACHE = "fitcasa-v4";
+const CACHE = "fitcasa-v5";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./fitcasa-icon.svg"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
