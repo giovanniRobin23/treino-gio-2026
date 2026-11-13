@@ -254,7 +254,7 @@ document.querySelector("#shareResult").onclick=shareSessionResult;
 document.querySelector("#finish").onclick=()=>{const w=+document.querySelector("#week").value,state=saved(w,selectedDay),now=Date.now();if(!state.startedAt)state.startedAt=now;state.finished=true;state.completedAt=now;state.durationSeconds=Math.max(0,Math.round((now-state.startedAt)/1000));save(w,selectedDay,state);render()};
 document.querySelector("#reset").onclick=()=>{const w=+document.querySelector("#week").value;save(w,selectedDay,{});render()};
 function showClock(){document.querySelector("#clock").textContent=String(Math.floor(remaining/60)).padStart(2,"0")+":"+String(remaining%60).padStart(2,"0")}
-document.querySelectorAll("[data-seconds]").forEach(b=>b.onclick=()=>{clearInterval(timer);timer=null;seconds=remaining=+b.dataset.seconds;document.querySelector("#timerToggle").textContent="Iniciar";document.querySelectorAll("[data-seconds]").forEach(x=>x.classList.toggle("active",x===b));showClock()});
+document.querySelectorAll("[data-seconds]").forEach(b=>b.onclick=()=>{clearInterval(timer);timer=null;clearInterval(restNoticeTicker);restNoticeTicker=null;cancelTimerNotification();seconds=remaining=+b.dataset.seconds;document.querySelector("#timerToggle").textContent="Iniciar";document.querySelectorAll("[data-seconds]").forEach(x=>x.classList.toggle("active",x===b));showClock()});
 document.querySelector("#timerToggle").onclick=()=>{
  if(timer){clearInterval(timer);timer=null;clearInterval(restNoticeTicker);restNoticeTicker=null;cancelTimerNotification();document.querySelector("#timerToggle").textContent="Continuar";return}
  document.querySelector("#timerToggle").textContent="Pausar";
