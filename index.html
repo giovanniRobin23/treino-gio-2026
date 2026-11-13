@@ -253,25 +253,63 @@ setShareTheme("light");
 document.querySelector("#shareResult").onclick=shareSessionResult;
 document.querySelector("#finish").onclick=()=>{const w=+document.querySelector("#week").value,state=saved(w,selectedDay),now=Date.now();if(!state.startedAt)state.startedAt=now;state.finished=true;state.completedAt=now;state.durationSeconds=Math.max(0,Math.round((now-state.startedAt)/1000));save(w,selectedDay,state);render()};
 document.querySelector("#reset").onclick=()=>{const w=+document.querySelector("#week").value;save(w,selectedDay,{});render()};
-function showClock(){document.querySelector("#clock").textContent=String(Math.floor(remaining/60)).padStart(2,"0")+":"+String(remaining%60).padStart(2,"0")}
-document.querySelectorAll("[data-seconds]").forEach(b=>b.onclick=()=>{clearInterval(timer);timer=null;clearInterval(restNoticeTicker);restNoticeTicker=null;cancelTimerNotification();seconds=remaining=+b.dataset.seconds;document.querySelector("#timerToggle").textContent="Iniciar";document.querySelectorAll("[data-seconds]").forEach(x=>x.classList.toggle("active",x===b));showClock()});
-document.querySelector("#timerToggle").onclick=()=>{
- if(timer){clearInterval(timer);timer=null;clearInterval(restNoticeTicker);restNoticeTicker=null;cancelTimerNotification();document.querySelector("#timerToggle").textContent="Continuar";return}
+function showClock(){document.querySelector("#clock").textContent=formatTime(remaining)}
+function updateRestMediaSession(playing){
+ if(!("mediaSession" in navigator))return;
+ try{
+  navigator.mediaSession.metadata=new MediaMetadata({title:"Descanso entre séries",artist:"FitCasa",album:"Timer de descanso"});
+  navigator.mediaSession.playbackState=playing?"playing":"paused";
+  navigator.mediaSession.setActionHandler("play",resumeRestTimer);
+  navigator.mediaSession.setActionHandler("pause",pauseRestTimer);
+  navigator.mediaSession.setActionHandler("stop",stopRestTimer);
+  updateRestMediaPosition();
+ }catch(e){}
+}
+function updateRestMediaPosition(){
+ if(!("mediaSession" in navigator)||typeof navigator.mediaSession.setPositionState!=="function")return;
+ try{navigator.mediaSession.setPositionState({duration:seconds,playbackRate:1,position:Math.min(seconds,Math.max(0,seconds-remaining))})}catch(e){}
+}
+function clearRestMediaSession(){
+ if(!("mediaSession" in navigator))return;
+ try{navigator.mediaSession.playbackState="none";navigator.mediaSession.metadata=null;navigator.mediaSession.setPositionState()}catch(e){}
+}
+function startRestTimer(){
+ if(timer)return;
  document.querySelector("#timerToggle").textContent="Pausar";
- if(Notification.permission==="granted"){showTimerNotification("Descanso em andamento",remaining);restNoticeTicker=setInterval(()=>{if(timer&&remaining>0)showTimerNotification("Descanso em andamento",remaining)},15000)}
+ updateRestMediaSession(true);
  timer=setInterval(()=>{
-  remaining--;showClock();
-  if(remaining<=0){
-   clearInterval(timer);timer=null;clearInterval(restNoticeTicker);restNoticeTicker=null;
-   document.querySelector("#timerToggle").textContent="Iniciar";
-   if("vibrate" in navigator)navigator.vibrate([180,100,180]);
-   sendNotification("Descanso concluído","Seu intervalo terminou. Quando estiver pronto, continue no seu ritmo.");
-   cancelTimerNotification();
-   remaining=seconds;showClock();
-  }
- },1000)
-};
-document.querySelector("#timerReset").onclick=()=>{clearInterval(timer);timer=null;clearInterval(restNoticeTicker);restNoticeTicker=null;cancelTimerNotification();remaining=seconds;showClock();document.querySelector("#timerToggle").textContent="Iniciar"};
+  remaining=Math.max(0,remaining-1);showClock();updateRestMediaPosition();
+  if(remaining===0)finishRestTimer();
+ },1000);
+}
+function pauseRestTimer(){
+ if(!timer)return;
+ clearInterval(timer);timer=null;
+ document.querySelector("#timerToggle").textContent="Continuar";
+ updateRestMediaSession(false);
+}
+function resumeRestTimer(){startRestTimer()}
+function stopRestTimer(){
+ if(timer){clearInterval(timer);timer=null}
+ remaining=seconds;showClock();
+ document.querySelector("#timerToggle").textContent="Iniciar";
+ clearRestMediaSession();
+}
+function finishRestTimer(){
+ if(timer){clearInterval(timer);timer=null}
+ document.querySelector("#timerToggle").textContent="Iniciar";
+ clearRestMediaSession();
+ if("vibrate" in navigator)navigator.vibrate([180,100,180]);
+ sendNotification("Descanso concluído","Seu intervalo terminou. Quando estiver pronto, continue no seu ritmo.","fitcasa-rest-finished");
+ remaining=seconds;showClock();
+}
+document.querySelectorAll("[data-seconds]").forEach(b=>b.onclick=()=>{
+ stopRestTimer();seconds=remaining=+b.dataset.seconds;
+ document.querySelector("#timerToggle").textContent="Iniciar";
+ document.querySelectorAll("[data-seconds]").forEach(x=>x.classList.toggle("active",x===b));showClock()
+});
+document.querySelector("#timerToggle").onclick=()=>{if(timer)pauseRestTimer();else startRestTimer()};
+document.querySelector("#timerReset").onclick=stopRestTimer;
 function formatTime(n){return String(Math.floor(n/60)).padStart(2,"0")+":"+String(n%60).padStart(2,"0")}
 
 function renderSessionElapsed(){
@@ -359,11 +397,11 @@ function startExercise(name){
  document.querySelector("#exerciseDock").classList.add("show");
  document.querySelector("#pauseExercise").textContent="Ⅱ Pausar";
  updateMediaSession(true);updateWorkClock();
- workTimer=setInterval(()=>{if(workPaused)return;workRemaining=Math.max(0,workRemaining-1);updateWorkClock();if(workRemaining===0){clearInterval(workTimer);workTimer=null;document.querySelector("#dockSubtitle").textContent="Tempo concluído · hora de descansar";document.querySelector("#pauseExercise").textContent="↻ Reiniciar";updateMediaSession(false);if("vibrate" in navigator)navigator.vibrate([180,80,180]);sendNotification("Tempo concluído",name+" — contador de "+workSeconds+" s finalizado.");}},1000);
+ workTimer=setInterval(()=>{if(workPaused)return;workRemaining=Math.max(0,workRemaining-1);updateWorkClock();if(workRemaining===0){clearInterval(workTimer);workTimer=null;document.querySelector("#dockSubtitle").textContent="Tempo concluído · hora de descansar";document.querySelector("#pauseExercise").textContent="↻ Reiniciar";updateMediaSession(false);if("vibrate" in navigator)navigator.vibrate([180,80,180]);sendNotification("Tempo concluído",name+" — contador de "+workSeconds+" s finalizado.","fitcasa-exercise-finished");}},1000);
 }
 async function showSystemNotification(title,body,options={}){
  if(!("Notification" in window)||Notification.permission!=="granted")return;
- const config={body,icon:"./fitcasa-icon.svg",badge:"./fitcasa-icon.svg",tag:"fitcasa-rest-timer",renotify:false,silent:true,...options};
+ const config={body,icon:"./fitcasa-icon.svg",badge:"./fitcasa-icon.svg",renotify:false,silent:false,...options};
  try{
   if("serviceWorker" in navigator){
    const reg=await navigator.serviceWorker.ready;
@@ -371,15 +409,8 @@ async function showSystemNotification(title,body,options={}){
   }else new Notification(title,config);
  }catch(error){try{new Notification(title,config)}catch(e){}}
 }
-function showTimerNotification(title,value){
- const mm=String(Math.floor(value/60)).padStart(2,"0"),ss=String(value%60).padStart(2,"0");
- showSystemNotification(title,mm+":"+ss+" restantes",{tag:"fitcasa-rest-timer",silent:true});
-}
-function cancelTimerNotification(){
- if("serviceWorker" in navigator)navigator.serviceWorker.ready.then(reg=>reg.getNotifications({tag:"fitcasa-rest-timer"})).then(list=>list.forEach(n=>n.close())).catch(()=>{});
-}
-function sendNotification(title,body){
- showSystemNotification(title,body,{tag:"fitcasa-timer-finished",renotify:true,silent:false});
+function sendNotification(title,body,tag="fitcasa-exercise-finished"){
+ showSystemNotification(title,body,{tag,renotify:true,silent:false});
 }
 document.querySelector("#enableNotifications").onclick=async()=>{
  if(!("Notification" in window)){document.querySelector("#notificationStatus").textContent="Este navegador não oferece notificações.";return}
